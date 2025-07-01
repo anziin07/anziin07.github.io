@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freelancer | Affordable Tech Help</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/spellchecker@1.0.0/spellchecker.min.js"></script>
+    <style>
+        /* Chatbot Styles */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chatbot-header {
+            background: #4f46e5;
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .chatbot-messages {
+            height: 300px;
+            padding: 16px;
+            overflow-y: auto;
+        }
+        .chatbot-input {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .chatbot-input input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            margin-right: 8px;
+        }
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .suggestion-item:hover {
+            background-color: #f3f4f6;
+        }
+        .chatbot-input button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-input button:hover {
+            animation: bubble 0.4s ease;
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4);
+        }
+
+        .chatbot-input button:active {
+            transform: scale(0.98);
+        }
+        .message {
+            margin-bottom: 12px;
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 18px;
+        }
+        .loading-dots {
+            display: flex;
+            padding: 8px 12px;
+        }
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            margin: 0 2px;
+            background-color: #9ca3af;
+            border-radius: 50%;
+            display: inline-block;
+            animation: loading 1.4s infinite ease-in-out both;
+        }
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        @keyframes loading {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        .bot-message {
+            background: #f3f4f6;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .user-message {
+            background: #4f46e5;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        .contact-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #3b82f6;
+        }
+
+        /* Bubble animation for buttons */
+        @keyframes bubble {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        button, a[class*="bg-indigo-600"] {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover, a[class*="bg-indigo-600"]:hover {
+            animation: bubble 0.4s ease;
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4);
+        }
+
+        button:active, a[class*="bg-indigo-600"]:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-gray-800">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm fixed w-full z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="#" class="flex-shrink-0 flex items-center">
+                        <img class="h-8 w-8 rounded-full" src="https://r.mobirisesite.com/1587466/assets/images/ansil-kp-96x128.jpg" alt="Logo">
+                        <span class="ml-2 text-xl font-bold text-indigo-600">ANZI</span>
+                    </a>
+                </div>
+                <div class="hidden md:ml-6 md:flex md:items-center md:space-x-8">
+                    <a href="#about" class="text-gray-900 hover:text-indigo-600 px-3 py-2 text-sm font-medium">About</a>
+                    <a href="#services" class="text-gray-900 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Services</a>
+                    <a href="#contact" class="text-gray-900 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Contact</a>
+                    <a href="#start" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Chatbot</a>
+                </div>
+                <div class="-mr-2 flex items-center md:hidden">
+                    <button type="button" id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#about" class="block px-3 py-2 rounded-md text-base font-medium text-gray-900 hover:text-indigo-600 hover:bg-gray-50">About</a>
+                <a href="#services" class="block px-3 py-2 rounded-md text-base font-medium text-gray-900 hover:text-indigo-600 hover:bg-gray-50">Services</a>
+                <a href="#contact" class="block px-3 py-2 rounded-md text-base font-medium text-gray-900 hover:text-indigo-600 hover:bg-gray-50">Contact</a>
+                <a href="#start" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700">Chatbot</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient pt-24 pb-16 md:pt-32 md:pb-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="lg:grid lg:grid-cols-2 lg:gap-8 items-center">
+                <div class="mb-12 lg:mb-0">
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-6">
+                        Affordable Tech Help – <span class="text-indigo-600">Freelance with Care</span>
+                    </h1>
+                    <p class="text-lg text-gray-600 mb-8">
+                        Hi, I'm Muhammed Ansil — a passionate freelance tech assistant offering affordable and reliable services in data entry, basic programming, and digital support. As a BCA student with a strong understanding of tech tools, I focus on delivering accurate, timely, and client-friendly solutions.
+                    </p>
+                    <div class="flex">
+                        <a href="#contact" class="bg-indigo-600 text-white px-6 py-3 rounded-md text-lg font-medium hover:bg-indigo-700 text-center">Start now</a>
+                    </div>
+                </div>
+                <div class="relative">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">My Services</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    At Affordable Tech Help, we provide smart and budget-friendly digital solutions tailored to your needs. Whether you're a business, student, or individual, we offer:
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Service 1 -->
+                <div class="service-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300">
+                    <img src="https://r.mobirisesite.com/1587466/assets/images/mbr-816x545.jpg" alt="Data Entry" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Data Entry</h3>
+                        <p class="text-gray-600 mb-4">
+                            Accurate and efficient data entry services for spreadsheets, forms, documents, and databases. Perfect for organizing information and saving you time.
+                        </p>
+                        <div class="mt-4 flex justify-end">
+                            <button class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition duration-300 relative overflow-hidden">
+                                Learn More
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="service-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300">
+                    <img src="https://r.mobirisesite.com/1587466/assets/images/mbr-816x544.jpg" alt="Basic Programming" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Basic Programming</h3>
+                        <p class="text-gray-600 mb-4">
+                            Simple and clean code solutions for websites, scripts, and beginner-level projects. Ideal for fixing bugs, building small tools, or starting something new.
+                        </p>
+                        <button class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition duration-300 relative overflow-hidden">
+                            Learn More
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="service-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300">
+                    <img src="https://r.mobirisesite.com/1587466/assets/images/gallery02.jpg" alt="Virtual Assistant" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Virtual Assistant</h3>
+                        <p class="text-gray-600 mb-4">
+                            Reliable virtual support for your daily tasks—scheduling, email handling, online research, file management, and more. Focus on what matters while I take care of the rest.
+                        </p>
+                        <button class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition duration-300">
+                            Learn More
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="lg:grid lg:grid-cols-2 lg:gap-8 items-center">
+                <div class="mb-12 lg:mb-0">
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">About me</h2>
+                    <p class="text-lg text-gray-600 mb-6">
+                        Hi, I'm Muhammed Ansil, a dedicated freelancer and BCA student from Kerala, passionate about helping people with tech-related tasks. I specialize in data entry, basic programming, and virtual assistance, offering affordable and reliable services to clients who value quality and care.
+                    </p>
+                    <p class="text-lg text-gray-600 mb-8">
+                        With a strong understanding of digital tools and a commitment to timely delivery, I aim to make your work easier and more efficient. Whether it's organizing data, writing code, or handling online tasks, I bring focus, clarity, and a personal touch to every project.
+                    </p>
+                    <a href="#contact" class="bg-indigo-600 text-white px-6 py-3 rounded-md text-lg font-medium hover:bg-indigo-700 inline-block">Start now</a>
+                </div>
+            </div>
+
+            <!-- Why Choose Us -->
+            <div class="mt-20">
+                <h3 class="text-2xl font-bold text-center text-gray-900 mb-12">Why us?</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <div class="bg-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <img src="https://r.mobirisesite.com/1587466/assets/images/mbr-179x111.png" alt="Reliable" class="w-12 h-12">
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">Reliable</h4>
+                        <p class="text-gray-600">
+                            Count on us to deliver accurate, on-time results—every time. Your trust is our priority.
+                        </p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <img src="https://r.mobirisesite.com/1587466/assets/images/mbr-179x121.jpg" alt="Affordable" class="w-12 h-12">
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">Affordable</h4>
+                        <p class="text-gray-600">
+                            High-quality services at prices that fit your budget—great value without compromising on results.
+                        </p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <img src="https://r.mobirisesite.com/1587466/assets/images/mbr-179x84.jpg" alt="Professional" class="w-12 h-12">
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">Professional</h4>
+                        <p class="text-gray-600">
+                            We deliver every project with attention to detail, clear communication, and a commitment to quality—ensuring a smooth and respectful client experience.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="lg:grid lg:grid-cols-2 lg:gap-8">
+                <!-- Contact Form -->
+                <div class="mb-12 lg:mb-0">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Contact Form</h2>
+                    <form id="contactForm" class="space-y-6">
+                        <div id="formSuccess" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                            Thanks for filling out the form!
+                        </div>
+                        <div id="formError" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                            Oops...! some problem!
+                        </div>
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                            <input type="text" id="name" name="name" class="contact-input w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="email" name="email" class="contact-input w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                            <textarea id="message" name="message" rows="4" class="contact-input w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                        </div>
+                        <div>
+                            <button type="submit" class="bg-indigo-600 text-white px-6 py-3 rounded-md text-lg font-medium hover:bg-indigo-700 w-full">
+                                Send message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Contact Info -->
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Get in touch</h2>
+                    <div class="space-y-6">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 bg-indigo-100 p-3 rounded-full">
+                                <i class="fas fa-phone text-indigo-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-gray-900">Phone</h3>
+                                <p class="text-gray-600">********</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 bg-indigo-100 p-3 rounded-full">
+                                <i class="fab fa-whatsapp text-indigo-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-gray-900">WhatsApp</h3>
+                                <p class="text-gray-600">********</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 bg-indigo-100 p-3 rounded-full">
+                                <i class="fas fa-envelope text-indigo-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-gray-900">Email</h3>
+                                <p class="text-gray-600">vividvortex07@gmail.com</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 bg-indigo-100 p-3 rounded-full">
+                                <i class="fas fa-clock text-indigo-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-gray-900">Working hours</h3>
+                                <p class="text-gray-600">9:00AM - 10:00PM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <a href="#" class="flex items-center">
+                        <img class="h-8 w-8 rounded-full" src="https://r.mobirisesite.com/1587466/assets/images/ansil-kp-96x128.jpg" alt="Logo">
+                        <span class="ml-2 text-xl font-bold">ANZI</span>
+                    </a>
+                    <p class="mt-4 text-gray-400">
+                        Affordable Tech Help – Freelance with Care
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#about" class="text-gray-400 hover:text-white">About</a></li>
+                        <li><a href="#services" class="text-gray-400 hover:text-white">Services</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-white">Contacts</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Works</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Services</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Data Entry</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Basic Programming</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Virtual Assistant</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Connect</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://www.instagram.com/anzi_in/?next=%2Fajuzz.in%2F" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>© Copyright 2023 ANZI - All Rights Reserved</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Feedback Button -->
+    <button id="feedbackButton" class="fixed bottom-6 right-6 bg-indigo-600 text-white w-14 h-14 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 flex items-center justify-center">
+        <i class="fas fa-comment-alt text-xl"></i>
+    </button>
+
+    <!-- Chatbot Container -->
+    <div class="chatbot-container" id="chatbot">
+        <div class="chatbot-header">
+            <h3>AI Assistant</h3>
+            <button class="chatbot-close" id="chatbotClose">&times;</button>
+        </div>
+        <div class="chatbot-messages" id="chatMessages">
+            <div class="message bot-message">Hello! How can I help you today?</div>
+        </div>
+        <div class="chatbot-input relative">
+            <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
+            <div id="suggestions" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b-lg shadow-lg hidden" style="top: 100%; left: 0;"></div>
+            <button id="sendMessage">Send</button>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900">Send Feedback</h3>
+                <button id="closeFeedbackModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="feedbackForm" class="space-y-4">
+                <div id="feedbackSuccess" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                    Thank you for your valuable feedback!
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Your Feedback</label>
+                    <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" rows="4" required></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
+                    <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300">
+                    Submit Feedback
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    // Close mobile menu if open
+                    mobileMenu.classList.add('hidden');
+                    
+                    // Calculate the scroll position accounting for fixed header
+                    const headerHeight = document.querySelector('nav').offsetHeight;
+                    const elementPosition = targetElement.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerHeight;
+                    
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Chatbot questions for suggestions
+        const questions = [
+            "What services do you offer?",
+            "How do I place an order?",
+            "What are your charges?",
+            "How long will it take to complete my project?",
+            "Can you work urgently or deliver within 24 hours?",
+            "How many revisions are included?",
+            "How will I receive my completed work?",
+            "Can I see samples of your past work?",
+            "Do you offer refunds?",
+            "How can I communicate with you?",
+            "Can you sign an NDA (Non-Disclosure Agreement)?",
+            "What tools or software do you use?",
+            "Do you offer support after project delivery?",
+            "Are your services available internationally?",
+            "Can I hire you on a long-term basis?"
+        ];
+
+        // Chatbot functionality
+        const chatbot = document.getElementById('chatbot');
+        const chatbotClose = document.getElementById('chatbotClose');
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendMessage = document.getElementById('sendMessage');
+        const chatbotButton = document.querySelector('a[href="#start"]');
+
+        // Open chatbot
+        chatbotButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            chatbot.style.display = 'flex';
+        });
+
+        // Close chatbot
+        chatbotClose.addEventListener('click', () => {
+            chatbot.style.display = 'none';
+        });
+
+        // Send message
+        sendMessage.addEventListener('click', sendUserMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendUserMessage();
+        });
+
+        const suggestions = document.getElementById('suggestions');
+
+        // Show suggestions based on input
+        userInput.addEventListener('input', function() {
+            const input = this.value.toLowerCase();
+            suggestions.innerHTML = '';
+            
+            if (input.length > 2) {
+                const matches = questions.filter(q => 
+                    q.toLowerCase().includes(input)
+                );
+                
+                if (matches.length) {
+                    matches.forEach(match => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.textContent = match;
+                        div.addEventListener('click', () => {
+                            userInput.value = match;
+                            suggestions.classList.add('hidden');
+                        });
+                        suggestions.appendChild(div);
+                    });
+                    suggestions.classList.remove('hidden');
+                } else {
+                    suggestions.classList.add('hidden');
+                }
+            } else {
+                suggestions.classList.add('hidden');
+            }
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target !== userInput) {
+                suggestions.classList.add('hidden');
+            }
+        });
+
+        function sendUserMessage() {
+            let message = userInput.value.trim();
+            if (message) {
+                suggestions.classList.add('hidden');
+                
+                // Correct spelling mistakes in the message
+                const words = message.split(' ');
+                const correctedWords = words.map(word => {
+                    // Skip very short words and numbers
+                    if (word.length <= 2 || !isNaN(word)) return word;
+                    
+                    // Check if word is misspelled (simple implementation)
+                    const commonWords = ['what','services','offer','order','charges',
+                        'price','cost','long','take','time','urgent','express',
+                        'revision','changes','receive','deliver','sample','past',
+                        'work','portfolio','refund','communicate','contact','nda',
+                        'non-disclosure','tools','software','support','delivery',
+                        'international','world','long-term','contract'];
+                    
+                    // Find closest match from our question keywords
+                    if (!commonWords.includes(word.toLowerCase())) {
+                        for (const commonWord of commonWords) {
+                            if (similarity(word.toLowerCase(), commonWord) > 0.7) {
+                                return commonWord;
+                            }
+                        }
+                    }
+                    return word;
+                });
+                
+                const correctedMessage = correctedWords.join(' ');
+                
+                // Add user message (show original with correction if needed)
+                const userMessage = document.createElement('div');
+                userMessage.className = 'message user-message';
+                if (correctedMessage !== message) {
+                    userMessage.innerHTML = `${correctedMessage} <small class="text-gray-400">(original: ${message})</small>`;
+                    message = correctedMessage; // Use corrected version for response
+                } else {
+                    userMessage.textContent = message;
+                }
+                chatMessages.appendChild(userMessage);
+                
+                // Clear input
+                userInput.value = '';
+                
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Add loading indicator
+                const loading = document.createElement('div');
+                loading.className = 'message bot-message loading-dots';
+                loading.innerHTML = '<span></span><span></span><span></span>';
+                chatMessages.appendChild(loading);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Simulate bot response after delay
+                setTimeout(() => {
+                    // Remove loading indicator
+                    chatMessages.removeChild(loading);
+                    
+                    const botMessage = document.createElement('div');
+                    botMessage.className = 'message bot-message';
+                    botMessage.textContent = getBotResponse(message);
+                    chatMessages.appendChild(botMessage);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 2000);
+            }
+        }
+
+        // Helper function to calculate similarity between two strings
+        function similarity(s1, s2) {
+            let longer = s1;
+            let shorter = s2;
+            if (s1.length < s2.length) {
+                longer = s2;
+                shorter = s1;
+            }
+            const longerLength = longer.length;
+            if (longerLength === 0) return 1.0;
+            return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
+        }
+
+        // Helper function for edit distance calculation
+        function editDistance(s1, s2) {
+            s1 = s1.toLowerCase();
+            s2 = s2.toLowerCase();
+            
+            const costs = [];
+            for (let i = 0; i <= s1.length; i++) {
+                let lastValue = i;
+                for (let j = 0; j <= s2.length; j++) {
+                    if (i == 0)
+                        costs[j] = j;
+                    else {
+                        if (j > 0) {
+                            let newValue = costs[j - 1];
+                            if (s1.charAt(i - 1) != s2.charAt(j - 1))
+                                newValue = Math.min(Math.min(newValue, lastValue),
+                                    costs[j]) + 1;
+                            costs[j - 1] = lastValue;
+                            lastValue = newValue;
+                        }
+                    }
+                }
+                if (i > 0) costs[s2.length] = lastValue;
+            }
+            return costs[s2.length];
+        }
+
+        function getBotResponse(message) {
+            const lowerMsg = message.toLowerCase();
+            
+            // Check for greetings
+            if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
+                return "Hello there! How can I assist you today?";
+            }
+
+            // Q&A responses
+            if (lowerMsg.includes('services') || lowerMsg.includes('offer')) {
+                return "I offer a range of services including data entry, virtual assistant tasks, basic programming (HTML, CSS, Python, C++), website creation, app design, and more. Let me know your needs!";
+            }
+            if (lowerMsg.includes('place an order') || lowerMsg.includes('order')) {
+                return "You can contact me directly through the website chat, or fill out the project form. I'll get back to you quickly to confirm details and get started.";
+            }
+            if (lowerMsg.includes('charges') || lowerMsg.includes('price') || lowerMsg.includes('cost')) {
+                return "Prices vary depending on the project type and complexity. Basic tasks start from ₹200 or $5. I'll give you a clear quote after understanding your requirements.";
+            }
+            if (lowerMsg.includes('long') && lowerMsg.includes('take') || lowerMsg.includes('time')) {
+                return "Turnaround time depends on the task. Small tasks usually take 1–3 days, while larger projects may take a week or more. I'll share an exact timeline once I review your request.";
+            }
+            if (lowerMsg.includes('urgent') || lowerMsg.includes('24 hours') || lowerMsg.includes('express')) {
+                return "Yes! I offer express delivery for urgent projects with a small extra charge. Just mention your deadline.";
+            }
+            if (lowerMsg.includes('revision') || lowerMsg.includes('changes')) {
+                return "I provide up to 2 free revisions to make sure you're satisfied. Additional revisions can be done at a small extra cost.";
+            }
+            if (lowerMsg.includes('receive') || lowerMsg.includes('deliver')) {
+                return "I'll deliver the work via email, Google Drive, or any platform you prefer. You'll receive all necessary files in standard formats.";
+            }
+            if (lowerMsg.includes('sample') || lowerMsg.includes('past work') || lowerMsg.includes('portfolio')) {
+                return "Yes! You can check out my portfolio page or request samples related to your project.";
+            }
+            if (lowerMsg.includes('refund')) {
+                return "If the work does not match the agreed requirements, I offer partial or full refunds based on the situation. My goal is 100% client satisfaction.";
+            }
+            if (lowerMsg.includes('communicate') || lowerMsg.includes('contact')) {
+                return "You can chat with me through this website, or contact me on WhatsApp, email, or Telegram — whichever is convenient for you.";
+            }
+            if (lowerMsg.includes('nda') || lowerMsg.includes('non-disclosure')) {
+                return "Yes, I can sign an NDA to ensure your project information stays private and secure.";
+            }
+            if (lowerMsg.includes('tools') || lowerMsg.includes('software')) {
+                return "I use tools like VS Code, Canva, Excel, Mobirise, Notion, and more depending on the task.";
+            }
+            if (lowerMsg.includes('support') && lowerMsg.includes('delivery')) {
+                return "Yes, I offer free support for 7 days after delivery. Extended support can also be arranged.";
+            }
+            if (lowerMsg.includes('international') || lowerMsg.includes('world')) {
+                return "Yes! I work with clients from all over the world. Payments can be made through UPI, PayPal, or bank transfer.";
+            }
+            if (lowerMsg.includes('long-term') || lowerMsg.includes('contract')) {
+                return "Absolutely. I'm open to both short-term and long-term freelance contracts.";
+            }
+
+            // Default response
+            return "I'm happy to help! Could you please clarify your question? You can ask about my services, pricing, delivery times, or any other details about working with me.";
+        }
+
+        // Form submission
+        const contactForm = document.getElementById('contactForm');
+        const formSuccess = document.getElementById('formSuccess');
+        const formError = document.getElementById('formError');
+        
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Simple validation
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const message = document.getElementById('message').value.trim();
+            
+            if (name && email && message) {
+                // Here you would typically send the form data to a server
+                // For demo purposes, we'll just show the success message
+                formSuccess.classList.remove('hidden');
+                formError.classList.add('hidden');
+                contactForm.reset();
+                
+                // Hide success message after 5 seconds
+                setTimeout(() => {
+                    formSuccess.classList.add('hidden');
+                }, 5000);
+            } else {
+                formError.classList.remove('hidden');
+                formSuccess.classList.add('hidden');
+            }
+        });
+
+        // Feedback functionality
+        const feedbackButton = document.getElementById('feedbackButton');
+        const feedbackModal = document.getElementById('feedbackModal');
+        const closeFeedbackModal = document.getElementById('closeFeedbackModal');
+        const feedbackForm = document.getElementById('feedbackForm');
+
+        feedbackButton.addEventListener('click', () => {
+            feedbackModal.classList.remove('hidden');
+        });
+
+        closeFeedbackModal.addEventListener('click', () => {
+            feedbackModal.classList.add('hidden');
+        });
+
+        feedbackForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Here you would typically send the feedback to your server
+            
+            // Show thank you message
+            const feedbackSuccess = document.getElementById('feedbackSuccess');
+            feedbackSuccess.classList.remove('hidden');
+            
+            // Hide after 3 seconds and close modal
+            setTimeout(() => {
+                feedbackSuccess.classList.add('hidden');
+                feedbackModal.classList.add('hidden');
+                feedbackForm.reset();
+            }, 3000);
+        });
+
+        // Close modal when clicking outside
+        feedbackModal.addEventListener('click', (e) => {
+            if (e.target === feedbackModal) {
+                feedbackModal.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
