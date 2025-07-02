@@ -6,7 +6,9 @@
     <title>Freelancer | Affordable Tech Help</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/spellchecker@1.0.0/spellchecker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
     <style>
         /* Chatbot Styles */
         .chatbot-container {
@@ -120,12 +122,25 @@
             border-bottom-right-radius: 4px;
         }
 
+        .animate-jump {
+            animation: jump 0.5s ease;
+        }
+
         .hero-gradient {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         }
+        .transform-style-preserve-3d {
+            transform-style: preserve-3d;
+        }
+        .hover\:rotate-y-6:hover {
+            transform: perspective(1000px) rotateY(6deg) translateY(-5px);
+        }
+        .hover\:translate-z-10:hover {
+            transform: perspective(1000px) translateZ(10px);
+        }
         .service-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: perspective(1000px) rotateY(6deg) translateY(-5px) translateZ(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
         .floating {
             animation: floating 3s ease-in-out infinite;
@@ -138,6 +153,27 @@
         .contact-input:focus {
             outline: none;
             box-shadow: 0 0 0 2px #3b82f6;
+        }
+
+        /* Animation for heading */
+        .animate-fadeInUp {
+            animation: fadeInUp 1s ease-out both;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Jump animation for chatbot button */
+        @keyframes jump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         /* Bubble animation for buttons */
@@ -169,7 +205,8 @@
         }
     </style>
 </head>
-<body class="font-sans antialiased text-gray-800">
+<body class="font-sans antialiased text-gray-800 relative">
+    <div id="threejs-background" class="fixed inset-0 -z-10"></div>
     <!-- Navigation -->
     <nav class="bg-white shadow-sm fixed w-full z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -184,7 +221,9 @@
                     <a href="#about" class="text-gray-900 hover:text-indigo-600 px-3 py-2 text-sm font-medium">About</a>
                     <a href="#services" class="text-gray-900 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Services</a>
                     <a href="#contact" class="text-gray-900 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Contact</a>
-                    <a href="#start" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Chatbot</a>
+                    <button id="feedbackButton" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 flex items-center justify-center">
+                        <i class="fas fa-comment-alt mr-2"></i> Feedback
+                    </button>
                 </div>
                 <div class="-mr-2 flex items-center md:hidden">
                     <button type="button" id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
@@ -222,6 +261,9 @@
                     </div>
                 </div>
                 <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+                         alt="Freelancer working" 
+                         class="w-full h-auto rounded-lg shadow-lg floating">
                 </div>
             </div>
         </div>
@@ -239,7 +281,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- Service 1 -->
-                <div class="service-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300">
+                <div class="service-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 transform-style-preserve-3d hover:rotate-y-6 hover:translate-z-10">
                     <img src="https://r.mobirisesite.com/1587466/assets/images/mbr-816x545.jpg" alt="Data Entry" class="w-full h-48 object-cover">
                     <div class="p-6">
                         <h3 class="text-xl font-bold text-gray-900 mb-3">Data Entry</h3>
@@ -290,6 +332,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="lg:grid lg:grid-cols-2 lg:gap-8 items-center">
                 <div class="mb-12 lg:mb-0">
+                    <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+                         alt="Computer setup" 
+                         class="w-full h-auto rounded-lg shadow-lg">
                 </div>
                 <div>
                     <h2 class="text-3xl font-bold text-gray-900 mb-6">About me</h2>
@@ -473,9 +518,9 @@
         </div>
     </footer>
 
-    <!-- Feedback Button -->
-    <button id="feedbackButton" class="fixed bottom-6 right-6 bg-indigo-600 text-white w-14 h-14 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 flex items-center justify-center">
-        <i class="fas fa-comment-alt text-xl"></i>
+    <!-- Chatbot Button -->
+    <button id="chatbotButton" class="fixed bottom-6 right-6 bg-indigo-600 text-white w-14 h-14 rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 flex items-center justify-center active:animate-jump">
+        <i class="fas fa-robot text-xl"></i>
     </button>
 
     <!-- Chatbot Container -->
@@ -582,7 +627,7 @@
         const chatMessages = document.getElementById('chatMessages');
         const userInput = document.getElementById('userInput');
         const sendMessage = document.getElementById('sendMessage');
-        const chatbotButton = document.querySelector('a[href="#start"]');
+        const chatbotButton = document.getElementById('chatbotButton');
 
         // Open chatbot
         chatbotButton.addEventListener('click', (e) => {
@@ -875,6 +920,80 @@
                 feedbackModal.classList.add('hidden');
             }
         });
+
+        // Initialize 3D background
+        function initThreeJS() {
+            const container = document.getElementById('threejs-background');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            // Create scene
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+            camera.position.z = 30;
+
+            // Create renderer
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(width, height);
+            renderer.setClearColor(0x000000, 0);
+            container.appendChild(renderer.domElement);
+
+            // Add floating shapes
+            const geometry = new THREE.IcosahedronGeometry(2, 0);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x4f46e5,
+                emissive: 0x4f46e5,
+                emissiveIntensity: 0.2,
+                shininess: 100,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const shapes = [];
+            for (let i = 0; i < 10; i++) {
+                const shape = new THREE.Mesh(geometry, material.clone());
+                shape.position.x = Math.random() * 100 - 50;
+                shape.position.y = Math.random() * 100 - 50;
+                shape.position.z = Math.random() * 100 - 50;
+                shape.scale.setScalar(Math.random() * 0.5 + 0.5);
+                scene.add(shape);
+                shapes.push(shape);
+            }
+
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                shapes.forEach(shape => {
+                    shape.rotation.x += 0.005;
+                    shape.rotation.y += 0.01;
+                });
+
+                renderer.render(scene, camera);
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            });
+
+            animate();
+        }
+
+        // Start 3D background after page loads
+        window.addEventListener('load', initThreeJS);
     </script>
 </body>
 </html>
